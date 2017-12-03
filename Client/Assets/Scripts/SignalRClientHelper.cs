@@ -6,6 +6,8 @@ using SignalR.Client._20.Transports;
 using Newtonsoft.Json.Linq;
 using System;
 using UnityEngine.UI;
+using SignalRModelLibrary;
+using Newtonsoft.Json;
 
 public class SignalRClientHelper : MonoBehaviour {
     public string SignalRUrl = "http://localhost:52527";
@@ -55,8 +57,9 @@ public class SignalRClientHelper : MonoBehaviour {
 
     private void Subscription_data(object[] obj)
     {
-        Debug.Log(obj[0].ToString() + "-" + obj[1].ToString());
-        ComingMessage += obj[0].ToString() + ":" + obj[1].ToString() + Environment.NewLine;
+        Debug.Log(obj[0].ToString());
+        ChatModel chatModel = JsonConvert.DeserializeObject<ChatModel>(obj[0].ToString());
+        ComingMessage += chatModel.Name + ": " + chatModel.Message + Environment.NewLine;
     }
 
     private void HubConnection_Error(System.Exception obj)
@@ -76,7 +79,13 @@ public class SignalRClientHelper : MonoBehaviour {
 
     public void SendMessage()
     {
-        _hubProxy.Invoke("Send", "Unity", MessageForChat.text);
+        ChatModel model = new ChatModel()
+        {
+            Id = 0,
+            Name = "Unity",
+            Message = MessageForChat.text
+        };
+        _hubProxy.Invoke("Send",model);
     }
     private void OnApplicationQuit()
     {
